@@ -1,4 +1,3 @@
-<!-- ComponentList.vue -->
 <template>
   <div class="component-list">
     <h3 class="text-lg font-medium mb-4">组件列表</h3>
@@ -33,9 +32,8 @@ export default defineComponent({
   },
   setup() {
     const components = ref([
-      { id: 1, componentName: 'ButtonComponent', label: 'Button 1' },
-      { id: 2, componentName: 'ButtonComponent', label: 'Button 2' },
-      { id: 3, componentName: 'InputComponent', label: 'Input' }
+      { id: 1, componentName: 'ButtonComponent', label: 'Button' },
+      { id: 2, componentName: 'InputComponent', label: 'Input' }
     ])
 
     function onUpdate(value: any[]) {

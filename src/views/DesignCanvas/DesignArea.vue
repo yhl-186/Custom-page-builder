@@ -1,7 +1,6 @@
-<!-- DesignArea.vue -->
 <template>
   <div class="design-area">
-    <h3 class="text-lg font-medium mb-4">Design Area</h3>
+    <h3 class="text-lg font-medium mb-4">设计区域</h3>
     <VueDraggable
       tag="div"
       :modelValue="designComponents"

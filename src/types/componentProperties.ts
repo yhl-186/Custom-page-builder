@@ -13,12 +13,12 @@ export const buttonProperties: ComponentProperty[] = [
     label: '按钮类型',
     type: 'select',
     options: [
-      { label: '默认', value: 'default' },
-      { label: '主要', value: 'primary' },
-      { label: '成功', value: 'success' },
-      { label: '警告', value: 'warning' },
-      { label: '危险', value: 'danger' },
-      { label: '信息', value: 'info' }
+      { label: 'default', value: 'default' },
+      { label: 'primary', value: 'primary' },
+      { label: 'succes', value: 'success' },
+      { label: 'warning', value: 'warning' },
+      { label: 'danger', value: 'danger' },
+      { label: 'info', value: 'info' }
     ],
     defaultValue: 'default'
   },

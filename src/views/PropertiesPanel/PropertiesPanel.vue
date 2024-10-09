@@ -1,4 +1,3 @@
-<!-- PropertiesPanel.vue -->
 <template>
   <el-card class="properties-panel">
     <template #header>

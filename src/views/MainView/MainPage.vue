@@ -1,8 +1,6 @@
-<!-- App.vue -->
 <template>
   <div class="app-container">
     <div class="sidebar">
-      <h3 class="text-lg font-medium mb-4">组件列表</h3>
       <ComponentList @component-dragged="addComponent" />
     </div>
     <div class="main-content">
