@@ -24,6 +24,14 @@ import { defineComponent, ref } from 'vue'
 import DesignArea from '../DesignCanvas/DesignArea.vue'
 import PropertiesPanel from '../PropertiesPanel/PropertiesPanel.vue'
 import ComponentList from '../ComponentList/ComponentList.vue'
+import { buttonProperties } from '@/types/componentProperties'
+
+// 为组件定义更详细的类型接口
+interface Component {
+  id: number
+  componentName: string
+  properties: Record<string, any>
+}
 
 export default defineComponent({
   name: 'App',
@@ -33,23 +41,61 @@ export default defineComponent({
     ComponentList
   },
   setup() {
-    const designComponents = ref<any[]>([])
-    const selectedComponent = ref<Record<string, any> | null>(null)
+    const designComponents = ref<Component[]>([])
+    const selectedComponent = ref<Component | null>(null)
 
-    function addComponent(component: Record<string, any>) {
-      const newComponent = { ...component, id: Date.now(), properties: {} }
-      designComponents.value.push(newComponent)
-      selectedComponent.value = newComponent
+    // 初始化组件属性的辅助函数
+    function getDefaultProperties(componentName: string): Record<string, any> {
+      return componentName === 'ButtonComponent'
+        ? buttonProperties.reduce(
+            (acc, prop) => {
+              acc[prop.key] = prop.defaultValue
+              return acc
+            },
+            {} as Record<string, any>
+          )
+        : {}
     }
 
-    function updateSelectedComponent(newComponent: Record<string, any> | null) {
-      selectedComponent.value = newComponent
-    }
-
-    function updateComponentProperty(property: { key: string; value: any }) {
-      if (selectedComponent.value) {
-        selectedComponent.value.properties[property.key] = property.value
+    function addComponent(component: Component) {
+      const newComponent: Component = {
+        ...component,
+        id: generateComponentId(), // 使用自定义ID生成方法
+        properties: getDefaultProperties(component.componentName)
       }
+      designComponents.value.push(newComponent)
+      selectComponent(newComponent)
+    }
+
+    function selectComponent(comp: Component) {
+      selectedComponent.value = comp
+    }
+
+    function updateSelectedComponent(newComponent: Component | null) {
+      if (newComponent) {
+        // 检查是否为 null
+        selectedComponent.value = newComponent
+      } else {
+        // 可以根据需要处理 null 的情况，例如清空选中组件
+        selectedComponent.value = null
+      }
+    }
+
+    function updateComponentProperty(updatedComponent: Component) {
+      const index = designComponents.value.findIndex((c) => c.id === updatedComponent.id)
+      if (index !== -1) {
+        // 直接使用 Object.assign 更新属性
+        designComponents.value[index] = {
+          ...designComponents.value[index],
+          ...updatedComponent
+        }
+        selectComponent(updatedComponent)
+      }
+    }
+
+    // 使用 UUID 生成器，如需要保证组件 ID 唯一性，可以使用更稳定的方式
+    function generateComponentId(): number {
+      return Math.floor(Math.random() * 1000000) // 示例：请根据需要更改ID生成逻辑
     }
 
     return {
@@ -79,6 +125,7 @@ export default defineComponent({
 .main-content {
   flex: 1;
   padding: 16px;
+  overflow: auto; /* 提升用户体验 */
 }
 
 .properties-panel {

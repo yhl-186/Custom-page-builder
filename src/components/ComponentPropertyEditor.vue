@@ -1,43 +1,47 @@
-<!-- ComponentPropertyEditor.vue -->
 <template>
   <div class="property-editor">
     <div v-for="property in properties" :key="property.key" class="property-item">
-      <template v-if="property.type === 'text'">
-        <el-input
-          v-model="localProperties[property.key]"
-          :placeholder="property.label"
-          @input="updateProperty(property.key, $event)"
-        ></el-input>
-      </template>
-      <template v-else-if="property.type === 'select'">
-        <el-select
-          v-model="localProperties[property.key]"
-          :placeholder="property.label"
-          @change="updateProperty(property.key, $event)"
-        >
-          <el-option
-            v-for="option in property.options"
-            :key="option.value"
-            :label="option.label"
-            :value="option.value"
-          ></el-option>
-        </el-select>
-      </template>
+      <el-input
+        v-if="property.type === 'text'"
+        v-model="localProperties[property.key]"
+        :placeholder="property.label"
+        @input="updateProperty(property.key, $event)"
+      ></el-input>
+      <el-select
+        v-else-if="property.type === 'select'"
+        v-model="localProperties[property.key]"
+        :placeholder="property.label"
+        @change="updateProperty(property.key, $event)"
+      >
+        <el-option
+          v-for="option in property.options"
+          :key="option.value"
+          :label="option.label"
+          :value="option.value"
+        ></el-option>
+      </el-select>
+      <el-input-number
+        v-else-if="property.type === 'number'"
+        v-model="localProperties[property.key]"
+        :placeholder="property.label"
+        @change="updateProperty(property.key, $event)"
+      ></el-input-number>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, computed, watch, ref } from 'vue'
-import { ElInput, ElSelect, ElOption } from 'element-plus'
-import { componentProperties } from '@/types/componentProperties'
+import { ElInput, ElSelect, ElOption, ElInputNumber } from 'element-plus'
+import { buttonProperties } from '../components/ButtonComponent.vue' // 假设这是组件属性的导入
 
 export default defineComponent({
   name: 'ComponentPropertyEditor',
   components: {
     ElInput,
     ElSelect,
-    ElOption
+    ElOption,
+    ElInputNumber
   },
   props: {
     componentName: {
@@ -51,9 +55,7 @@ export default defineComponent({
   },
   emits: ['update:property'],
   setup(props, { emit }) {
-    const properties = computed(() => componentProperties[props.componentName] || [])
-
-    const localProperties = ref({ ...props.componentProperties })
+    const localProperties = ref({ ...props.componentProperties }) // 初始化本地属性
 
     watch(
       () => props.componentProperties,
@@ -63,9 +65,14 @@ export default defineComponent({
       { deep: true }
     )
 
+    const properties = computed(() => {
+      // 根据 componentName 返回相应的属性
+      return buttonProperties // 根据您的逻辑返回相应属性
+    })
+
     const updateProperty = (key: string, value: any) => {
       localProperties.value[key] = value
-      emit('update:property', { key, value })
+      emit('update:property', { key, value }) // 按需自定义，这里用独特的更新逻辑
     }
 
     return {

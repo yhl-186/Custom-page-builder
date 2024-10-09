@@ -18,10 +18,17 @@
           :is="comp.componentName"
           v-bind="comp.properties"
           @input="handleInputChange(comp, $event)"
-          @click.stop="handleComponentClick(comp)"
-        ></component>
+        />
       </div>
     </VueDraggable>
+
+    <!-- 只在 selectedComponent 存在时显示属性编辑器 -->
+    <ComponentPropertyEditor
+      v-if="selectedComponent"
+      :componentName="selectedComponent.componentName"
+      :componentProperties="selectedComponent.properties"
+      @update:property="updateComponentProperty"
+    />
   </div>
 </template>
 
@@ -30,53 +37,61 @@ import { defineComponent, ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import ButtonComponent from '../../components/ButtonComponent.vue'
 import InputComponent from '../../components/InputComponent.vue'
+import ComponentPropertyEditor from '../../components/ComponentPropertyEditor.vue'
 import type { PropType } from 'vue'
+
+// 定义组件属性的接口
+interface Component {
+  id: number
+  componentName: string
+  properties: Record<string, any>
+  value?: string
+}
 
 export default defineComponent({
   name: 'DesignArea',
   components: {
     VueDraggable,
     ButtonComponent,
-    InputComponent
+    InputComponent,
+    ComponentPropertyEditor
   },
   props: {
     selectedComponent: {
-      type: Object as PropType<Record<string, any> | null>,
+      type: Object as PropType<Component | null>,
       default: null
     }
   },
   emits: ['update:selectedComponent', 'update:property'],
   setup(props, { emit }) {
-    const designComponents = ref<any[]>([])
+    const designComponents = ref<Component[]>([])
 
-    function onUpdate(value: any[]) {
-      designComponents.value = value
+    const findComponentIndex = (id: number) => {
+      return designComponents.value.findIndex((c) => c.id === id)
+    }
+
+    function onUpdate(updatedComponents: Component[]) {
+      designComponents.value = updatedComponents
     }
 
     function handleChange(event: any) {
       if (event.added) {
-        const newComponent = {
+        const newComponent: Component = {
           ...event.added.element,
           id: Date.now(),
-          type: 'default',
-          value: '',
           properties: {}
         }
         designComponents.value.push(newComponent)
-        emit('update:selectedComponent', newComponent) // 选中新添加的组件
+        emit('update:selectedComponent', newComponent)
       }
     }
 
-    function selectComponent(comp: any) {
+    function selectComponent(comp: Component) {
       emit('update:selectedComponent', comp)
     }
 
-    function handleComponentClick(comp: any) {
-      console.log('Component clicked:', comp)
-    }
-
-    function handleInputChange(comp: any, value: string) {
-      const index = designComponents.value.findIndex((c) => c.id === comp.id)
+    function handleInputChange(comp: Component, value: string) {
+      const index = findComponentIndex(comp.id)
       if (index !== -1) {
         designComponents.value[index].value = value
         emit('update:selectedComponent', { ...designComponents.value[index] })
@@ -85,12 +100,17 @@ export default defineComponent({
 
     function updateComponentProperty(property: { key: string; value: any }) {
       if (props.selectedComponent) {
-        const updatedComponent = { ...props.selectedComponent }
-        updatedComponent.properties[property.key] = property.value
-        const index = designComponents.value.findIndex((c) => c.id === updatedComponent.id)
+        const updatedComponent = {
+          ...props.selectedComponent,
+          properties: {
+            ...props.selectedComponent.properties,
+            [property.key]: property.value
+          }
+        }
+        const index = findComponentIndex(updatedComponent.id)
         if (index !== -1) {
           designComponents.value[index] = { ...updatedComponent }
-          emit('update:selectedComponent', { ...updatedComponent })
+          emit('update:selectedComponent', { ...updatedComponent }) // 更新选中的组件
         }
       }
     }
@@ -100,7 +120,6 @@ export default defineComponent({
       onUpdate,
       handleChange,
       selectComponent,
-      handleComponentClick,
       handleInputChange,
       updateComponentProperty
     }

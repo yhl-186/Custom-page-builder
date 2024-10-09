@@ -17,6 +17,13 @@
 import { defineComponent } from 'vue'
 import { ElCard } from 'element-plus'
 import ComponentPropertyEditor from '../../components/ComponentPropertyEditor.vue'
+import type { PropType } from 'vue'
+// 定义组件属性类型
+interface Component {
+  id: number
+  componentName: string
+  properties: Record<string, any> // 具体属性可以替换为更详细的接口
+}
 
 export default defineComponent({
   name: 'PropertiesPanel',
@@ -26,14 +33,24 @@ export default defineComponent({
   },
   props: {
     selectedComponent: {
-      type: Object as () => Record<string, any> | null,
+      type: Object as PropType<Component | null>,
       default: null
     }
   },
   emits: ['update:property'],
   setup(props, { emit }) {
     const updateProperty = (property: { key: string; value: any }) => {
-      emit('update:property', property)
+      if (props.selectedComponent) {
+        // 保持原有属性，更新指定的属性
+        const updatedComponent = {
+          ...props.selectedComponent,
+          properties: {
+            ...props.selectedComponent.properties,
+            [property.key]: property.value
+          }
+        }
+        emit('update:property', updatedComponent)
+      }
     }
 
     return {
